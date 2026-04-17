@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MDAC Better</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      width: 360px;
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #f8f9fb;
+      color: #1a1a1a;
+    }
+
+    .header {
+      background: #003893;
+      color: white;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header h1 {
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .header .badge {
+      background: #FFD100;
+      color: #003893;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 9999px;
+    }
+
+    .content {
+      padding: 16px;
+    }
+
+    /* States */
+    .state { display: none; }
+    .state.active { display: block; }
+
+    /* Profile card */
+    .profile-card {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+
+    .profile-card .name {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+
+    .profile-card .passport {
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    .profile-card .details {
+      margin-top: 10px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+
+    .profile-card .detail-label {
+      font-size: 10px;
+      color: #9ca3af;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .profile-card .detail-value {
+      font-size: 12px;
+      font-weight: 600;
+      color: #374151;
+    }
+
+    /* Buttons */
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.1s, opacity 0.1s;
+      text-align: center;
+    }
+
+    .btn:active { transform: scale(0.97); }
+
+    .btn-primary {
+      background: #CC0001;
+      color: white;
+    }
+
+    .btn-primary:hover { opacity: 0.9; }
+
+    .btn-secondary {
+      background: white;
+      color: #003893;
+      border: 2px solid #003893;
+      margin-top: 8px;
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: #6b7280;
+      border: 1px solid #e5e7eb;
+      margin-top: 8px;
+      font-size: 12px;
+    }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 24px 16px;
+    }
+
+    .empty-state .icon {
+      font-size: 32px;
+      margin-bottom: 12px;
+    }
+
+    .empty-state h2 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .empty-state p {
+      font-size: 12px;
+      color: #6b7280;
+      line-height: 1.5;
+      margin-bottom: 16px;
+    }
+
+    /* Form fields */
+    .form-group {
+      margin-bottom: 10px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      color: #6b7280;
+      margin-bottom: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: inherit;
+      background: white;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: #003893;
+      box-shadow: 0 0 0 2px rgba(0, 56, 147, 0.1);
+    }
+
+    .form-section-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #003893;
+      margin: 14px 0 8px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .footer {
+      padding: 12px 16px;
+      border-top: 1px solid #e5e7eb;
+      text-align: center;
+    }
+
+    .footer a {
+      font-size: 11px;
+      color: #003893;
+      text-decoration: none;
+    }
+
+    .footer a:hover { text-decoration: underline; }
+
+    .status-msg {
+      font-size: 12px;
+      text-align: center;
+      padding: 8px;
+      border-radius: 8px;
+      margin-top: 8px;
+      display: none;
+    }
+
+    .status-msg.success {
+      display: block;
+      background: #ecfdf5;
+      color: #065f46;
+    }
+
+    .status-msg.error {
+      display: block;
+      background: #fef2f2;
+      color: #991b1b;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>MDAC Better</h1>
+    <span class="badge">BETA</span>
+  </div>
+
+  <div class="content">
+    <!-- State: Has saved profile -->
+    <div id="state-profile" class="state">
+      <div class="profile-card">
+        <div class="name" id="profile-name">—</div>
+        <div class="passport" id="profile-passport">—</div>
+        <div class="details">
+          <div>
+            <div class="detail-label">Nationality</div>
+            <div class="detail-value" id="profile-nationality">—</div>
+          </div>
+          <div>
+            <div class="detail-label">DOB</div>
+            <div class="detail-value" id="profile-dob">—</div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" id="btn-fill">Fill MDAC Form</button>
+      <button class="btn btn-secondary" id="btn-edit">Edit Profile</button>
+      <button class="btn btn-outline" id="btn-clear">Clear Saved Profile</button>
+
+      <div id="fill-status" class="status-msg"></div>
+    </div>
+
+    <!-- State: No profile — show form -->
+    <div id="state-empty" class="state">
+      <div class="empty-state">
+        <div class="icon">🇲🇾</div>
+        <h2>No Profile Saved</h2>
+        <p>Save your details once. Next time you travel to Malaysia, fill the arrival card in one click.</p>
+      </div>
+
+      <button class="btn btn-primary" id="btn-show-form">Create Profile</button>
+      <button class="btn btn-outline" id="btn-import">Import from Web App</button>
+    </div>
+
+    <!-- State: Edit/Create form -->
+    <div id="state-form" class="state">
+      <div class="form-section-title">Personal Information</div>
+
+      <div class="form-group">
+        <label>Full Name (as in passport)</label>
+        <input type="text" id="f-fullName" placeholder="JOHN DOE" />
+      </div>
+
+      <div class="row-2">
+        <div class="form-group">
+          <label>Passport Number</label>
+          <input type="text" id="f-passportNumber" placeholder="AB1234567" />
+        </div>
+        <div class="form-group">
+          <label>Sex</label>
+          <select id="f-sex">
+            <option value="">Select</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Nationality</label>
+        <input type="text" id="f-nationality" placeholder="e.g. United States" />
+      </div>
+
+      <div class="row-2">
+        <div class="form-group">
+          <label>Date of Birth</label>
+          <input type="date" id="f-dateOfBirth" />
+        </div>
+        <div class="form-group">
+          <label>Passport Expiry</label>
+          <input type="date" id="f-passportExpiry" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Place of Birth (country)</label>
+        <input type="text" id="f-placeOfBirth" placeholder="e.g. United States" />
+      </div>
+
+      <div class="form-group">
+        <label>Country of Passport Issuance</label>
+        <input type="text" id="f-countryOfPassportIssuance" placeholder="e.g. United States" />
+      </div>
+
+      <div class="form-section-title">Contact</div>
+
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="f-email" placeholder="you@example.com" />
+      </div>
+
+      <div class="row-2">
+        <div class="form-group">
+          <label>Phone Code</label>
+          <input type="text" id="f-phoneCountryCode" placeholder="+1" />
+        </div>
+        <div class="form-group">
+          <label>Phone Number</label>
+          <input type="text" id="f-phoneNumber" placeholder="5551234567" />
+        </div>
+      </div>
+
+      <div class="form-section-title">Travel Details</div>
+
+      <div class="row-2">
+        <div class="form-group">
+          <label>Arrival Date</label>
+          <input type="date" id="f-arrivalDate" />
+        </div>
+        <div class="form-group">
+          <label>Departure Date</label>
+          <input type="date" id="f-departureDate" />
+        </div>
+      </div>
+
+      <div class="row-2">
+        <div class="form-group">
+          <label>Transport</label>
+          <select id="f-modeOfTransport">
+            <option value="">Select</option>
+            <option value="Air">Air</option>
+            <option value="Land">Land</option>
+            <option value="Sea">Sea</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Flight / Vehicle No.</label>
+          <input type="text" id="f-flightNumber" placeholder="MH123" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Departing From (country)</label>
+        <input type="text" id="f-departureCountry" placeholder="e.g. Singapore" />
+      </div>
+
+      <div class="form-section-title">Stay in Malaysia</div>
+
+      <div class="form-group">
+        <label>Hotel / Accommodation Name</label>
+        <input type="text" id="f-hotelName" placeholder="Hotel name" />
+      </div>
+
+      <div class="form-group">
+        <label>Address</label>
+        <input type="text" id="f-addressInMalaysia" placeholder="Street address" />
+      </div>
+
+      <div class="row-2">
+        <div class="form-group">
+          <label>State</label>
+          <select id="f-stateInMalaysia">
+            <option value="">Select</option>
+            <option>Johor</option>
+            <option>Kedah</option>
+            <option>Kelantan</option>
+            <option>Melaka</option>
+            <option>Negeri Sembilan</option>
+            <option>Pahang</option>
+            <option>Pulau Pinang</option>
+            <option>Perak</option>
+            <option>Perlis</option>
+            <option>Selangor</option>
+            <option>Terengganu</option>
+            <option>Sabah</option>
+            <option>Sarawak</option>
+            <option>WP Kuala Lumpur</option>
+            <option>WP Labuan</option>
+            <option>WP Putrajaya</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>City</label>
+          <input type="text" id="f-cityInMalaysia" placeholder="City" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Postal Code</label>
+        <input type="text" id="f-postalCode" placeholder="50000" />
+      </div>
+
+      <button class="btn btn-primary" id="btn-save" style="margin-top: 12px;">Save Profile</button>
+      <button class="btn btn-outline" id="btn-cancel">Cancel</button>
+    </div>
+  </div>
+
+  <div class="footer">
+    <a href="https://mdac-better.vercel.app" target="_blank">Open MDAC Better Web App</a>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
