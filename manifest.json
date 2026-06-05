@@ -1,13 +1,12 @@
 {
   "manifest_version": 3,
   "name": "MDAC Better — Malaysia Arrival Card Autofill",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "One-click autofill for Malaysia's Digital Arrival Card. Save your profile once, fill the official form instantly.",
   "permissions": [
     "storage",
     "activeTab",
-    "scripting",
-    "tabs"
+    "scripting"
   ],
   "host_permissions": [
     "https://imigresen-online.imi.gov.my/*"
